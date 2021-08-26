@@ -1,0 +1,31 @@
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a routerLink="/" class="navbar-brand">Multi Tab Logged State</a>
+    </div>
+
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li routerLinkActive="active"><a routerLink="/allowed">Allowed</a></li>
+        <li routerLinkActive="active" *ngIf="hasPermissionForRestricted"><a routerLink="/restricted">Restricted</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <ng-container *ngIf="!loggedIn">
+          <li><a class="pointer" (click)="openLogInModal()">Log In</a></li>
+        </ng-container>
+        <ng-container *ngIf="loggedIn">
+          <li><a class="pointer" (click)="logOut()">Log Out ({{ email }})</a></li>
+        </ng-container>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<router-outlet></router-outlet>
+
+<modal
+  [(open)]="showLogInModal">
+  <a class="pointer" (click)="logInAdminUser()">Log In (Admin User)</a>
+  <br>
+  <a class="pointer" (click)="logInRegularUser()">Log In (Regular User)</a>
+</modal>
