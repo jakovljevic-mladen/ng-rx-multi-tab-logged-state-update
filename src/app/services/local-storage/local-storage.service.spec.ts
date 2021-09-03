@@ -30,7 +30,7 @@ describe('LocalStorageService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('localStorageEvents$', () => {
+  describe('filterNewUserDataChanges operator', () => {
 
     beforeEach(() => {
       testScheduler = new TestScheduler((actual, expected) => {
@@ -40,9 +40,9 @@ describe('LocalStorageService', () => {
 
     it('should only filter storage events with key "user"', () => {
       testScheduler.run(({ hot, expectObservable, expectSubscriptions }) => {
-        service['_localStorageEvents$'] = hot('--a--b--c-b---a---d----b-e-', storageEventValues);
-        const expected = '                     --i-----j-----i---k------l-';
-        const subs = '                         ^--------------------------';
+        const e1 = hot('  --a--b--c-b---a---d----b-e-', storageEventValues);
+        const expected = '--i-----j-----i---k------l-';
+        const subs = '    ^--------------------------';
 
         const expectedValues = {
           i: null,
@@ -51,8 +51,8 @@ describe('LocalStorageService', () => {
           l: regularUser.slice(0, 1)
         };
 
-        expectObservable(service.userDataChanges$).toBe(expected, expectedValues);
-        expectSubscriptions((<any>service['_localStorageEvents$']).subscriptions).toBe(subs);
+        expectObservable(e1.pipe(service.filterNewUserDataChanges())).toBe(expected, expectedValues);
+        expectSubscriptions(e1.subscriptions).toBe(subs);
       });
     });
   });
