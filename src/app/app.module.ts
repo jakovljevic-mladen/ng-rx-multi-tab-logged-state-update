@@ -10,6 +10,7 @@ import { RestrictedComponent } from './components/restricted/restricted.componen
 import { ModalComponent } from './components/modal/modal.component';
 
 import { AuthService } from './services/auth/auth.service';
+import { LocalStorageService } from './services/local-storage/local-storage.service';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { AuthService } from './services/auth/auth.service';
     AppRoutingModule
   ],
   providers: [
-    AuthService
+    AuthService,
+    LocalStorageService
   ],
   bootstrap: [AppComponent]
 })
