@@ -56,8 +56,8 @@ describe('LocalStorageService', () => {
           e: <StorageEvent>{ key: 'user', newValue: badlyFormattedUserData }
         };
         const e1 = hot('  --a--b--c-b---a---d----b-e-', storageEventValues);
+        const e1subs = '  ^--------------------------';
         const expected = '--i-----j-----i---k------l-';
-        const subs = '    ^--------------------------';
 
         const expectedValues = {
           i: null,
@@ -67,7 +67,51 @@ describe('LocalStorageService', () => {
         };
 
         expectObservable(e1.pipe(service.filterNewUserDataChanges())).toBe(expected, expectedValues);
-        expectSubscriptions(e1.subscriptions).toBe(subs);
+        expectSubscriptions(e1.subscriptions).toBe(e1subs);
+      });
+    });
+
+    it('should handle error', () => {
+      testScheduler.run(({ hot, expectObservable, expectSubscriptions }) => {
+        const e1 = hot<StorageEvent>('#   ');
+        const e1subs = '              (^!)';
+        const expected = '            #   ';
+
+        expectObservable(e1.pipe(service.filterNewUserDataChanges())).toBe(expected);
+        expectSubscriptions(e1.subscriptions).toBe(e1subs);
+      });
+    });
+
+    it('should handle empty', () => {
+      testScheduler.run(({ hot, expectObservable, expectSubscriptions }) => {
+        const e1 = hot<StorageEvent>('|   ');
+        const e1subs = '              (^!)';
+        const expected = '            |   ';
+
+        expectObservable(e1.pipe(service.filterNewUserDataChanges())).toBe(expected);
+        expectSubscriptions(e1.subscriptions).toBe(e1subs);
+      });
+    });
+
+    it('should allow unsubscribing explicitly and early', () => {
+      testScheduler.run(({ hot, expectObservable, expectSubscriptions }) => {
+        const storageEventValues = {
+          a: <StorageEvent>{ key: 'user', newValue: null },
+          b: <StorageEvent>{ key: 'welcomePopUp', newValue: 'true' },
+          c: <StorageEvent>{ key: 'user', newValue: adminUserData }
+        };
+        const e1 = hot('  --a--b--c-b---a--', storageEventValues);
+        const e1subs = '  ^--------!       ';
+        const expected = '--i-----j-       ';
+        const unsub = '   ---------!       ';
+
+        const expectedValues = {
+          i: null,
+          j: adminUserData
+        };
+
+        expectObservable(e1.pipe(service.filterNewUserDataChanges()), unsub).toBe(expected, expectedValues);
+        expectSubscriptions(e1.subscriptions).toBe(e1subs);
       });
     });
   });
@@ -86,15 +130,15 @@ describe('LocalStorageService', () => {
           b: adminUserData
         };
         const e1 = hot('  ----b----', values);
+        const e1subs = '  ^--------';
         const expected = '----j----';
-        const subs = '    ^--------';
 
         const expectedValues = {
           j: <StateChange>{ state: 'loggedIn', user: adminUser }
         };
 
         expectObservable(e1.pipe(service.loggedStateChangesOperator())).toBe(expected, expectedValues);
-        expectSubscriptions(e1.subscriptions).toBe(subs);
+        expectSubscriptions(e1.subscriptions).toBe(e1subs);
       });
     });
 
@@ -105,8 +149,8 @@ describe('LocalStorageService', () => {
           b: null
         };
         const e1 = hot('  ----a--b-----------', values);
+        const e1subs = '  ^------------------';
         const expected = '----i--j 4999ms k--';
-        const subs = '    ^------------------';
 
         const expectedValues = {
           i: <StateChange>{ state: 'loggedIn', user: adminUser },
@@ -115,7 +159,7 @@ describe('LocalStorageService', () => {
         };
 
         expectObservable(e1.pipe(service.loggedStateChangesOperator())).toBe(expected, expectedValues);
-        expectSubscriptions(e1.subscriptions).toBe(subs);
+        expectSubscriptions(e1.subscriptions).toBe(e1subs);
       });
     });
 
@@ -127,8 +171,8 @@ describe('LocalStorageService', () => {
           c: regularUserData
         };
         const e1 = hot('  ----a--b---- 2s ---c---', values);
+        const e1subs = '  ^----------- 2s -------';
         const expected = '----i--j---- 2s ---k---';
-        const subs = '    ^----------- 2s -------';
 
         const expectedValues = {
           i: <StateChange>{ state: 'loggedIn', user: adminUser },
@@ -137,7 +181,7 @@ describe('LocalStorageService', () => {
         };
 
         expectObservable(e1.pipe(service.loggedStateChangesOperator())).toBe(expected, expectedValues);
-        expectSubscriptions(e1.subscriptions).toBe(subs);
+        expectSubscriptions(e1.subscriptions).toBe(e1subs);
       });
     });
 
@@ -149,8 +193,8 @@ describe('LocalStorageService', () => {
           c: adminUserData
         };
         const e1 = hot('  ----a----b-- 3s ---c----', values);
+        const e1subs = '  ^----------- 3s --------';
         const expected = '----i----j-- 3s ---k----';
-        const subs = '    ^----------- 3s --------';
 
         const expectedValues = {
           i: <StateChange>{ state: 'errorParsingLocalStorage' },
@@ -159,7 +203,7 @@ describe('LocalStorageService', () => {
         };
 
         expectObservable(e1.pipe(service.loggedStateChangesOperator())).toBe(expected, expectedValues);
-        expectSubscriptions(e1.subscriptions).toBe(subs);
+        expectSubscriptions(e1.subscriptions).toBe(e1subs);
       });
     });
   });
